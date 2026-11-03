@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spenddiary.mapper.StatisticsMapper">
+
+    <sql id="ledgerFilter">
+        ledger_id IN
+        <foreach collection="ledgerIds" item="ledgerId" open="(" separator="," close=")">
+            #{ledgerId}
+        </foreach>
+        AND occurred_at &gt;= #{start}
+        AND occurred_at &lt; #{end}
+    </sql>
+
+    <select id="sumByType" resultType="map">
+        SELECT type, SUM(amount) AS total
+        FROM transactions
+        WHERE
+        <include refid="ledgerFilter"/>
+        GROUP BY type
+    </select>
+
+    <select id="sumByCategory" resultType="map">
+        SELECT category_id AS categoryId, type, SUM(amount) AS total
+        FROM transactions
+        WHERE
+        <include refid="ledgerFilter"/>
+        GROUP BY category_id, type
+        ORDER BY total DESC
+    </select>
+
+    <select id="sumDaily" resultType="map">
+        SELECT DATE_FORMAT(occurred_at, '%Y-%m-%d') AS date, type, SUM(amount) AS total
+        FROM transactions
+        WHERE
+        <include refid="ledgerFilter"/>
+        GROUP BY DATE_FORMAT(occurred_at, '%Y-%m-%d'), type
+        ORDER BY date ASC
+    </select>
+
+</mapper>

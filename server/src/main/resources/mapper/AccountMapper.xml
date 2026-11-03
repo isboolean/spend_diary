@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spenddiary.mapper.AccountMapper">
+
+    <insert id="insert" parameterType="com.spenddiary.entity.Account" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO accounts (ledger_id, name, type, balance)
+        VALUES (#{ledgerId}, #{name}, #{type}, #{balance})
+    </insert>
+
+    <select id="findByLedgerId" resultType="com.spenddiary.entity.Account">
+        SELECT id, ledger_id, name, type, balance, created_at, updated_at
+        FROM accounts
+        WHERE ledger_id = #{ledgerId}
+    </select>
+
+    <select id="findByLedgerIds" resultType="com.spenddiary.entity.Account">
+        SELECT id, ledger_id, name, type, balance, created_at, updated_at
+        FROM accounts
+        WHERE ledger_id IN
+        <foreach collection="ledgerIds" item="ledgerId" open="(" separator="," close=")">
+            #{ledgerId}
+        </foreach>
+    </select>
+
+    <select id="findById" resultType="com.spenddiary.entity.Account">
+        SELECT id, ledger_id, name, type, balance, created_at, updated_at
+        FROM accounts
+        WHERE id = #{id}
+    </select>
+
+    <update id="update" parameterType="com.spenddiary.entity.Account">
+        UPDATE accounts
+        SET name = #{name},
+            type = #{type}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM accounts
+        WHERE id = #{id}
+    </delete>
+
+    <update id="updateBalance">
+        UPDATE accounts
+        SET balance = balance + #{delta}
+        WHERE id = #{id}
+    </update>
+
+</mapper>

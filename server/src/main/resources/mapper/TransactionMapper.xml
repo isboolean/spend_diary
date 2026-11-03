@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spenddiary.mapper.TransactionMapper">
+
+    <insert id="insert" parameterType="com.spenddiary.entity.Transaction" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO transactions (ledger_id, account_id, category_id, type, amount, occurred_at, note)
+        VALUES (#{ledgerId}, #{accountId}, #{categoryId}, #{type}, #{amount}, #{occurredAt}, #{note})
+    </insert>
+
+    <select id="findById" resultType="com.spenddiary.entity.Transaction">
+        SELECT id, ledger_id, account_id, category_id, type, amount, occurred_at, note, created_at, updated_at
+        FROM transactions
+        WHERE id = #{id}
+    </select>
+
+    <select id="findByLedgerId" resultType="com.spenddiary.entity.Transaction">
+        SELECT id, ledger_id, account_id, category_id, type, amount, occurred_at, note, created_at, updated_at
+        FROM transactions
+        WHERE ledger_id = #{ledgerId}
+        ORDER BY occurred_at DESC, id DESC
+    </select>
+
+    <select id="findByLedgerIdsBetween" resultType="com.spenddiary.entity.Transaction">
+        SELECT id, ledger_id, account_id, category_id, type, amount, occurred_at, note, created_at, updated_at
+        FROM transactions
+        WHERE ledger_id IN
+        <foreach collection="ledgerIds" item="ledgerId" open="(" separator="," close=")">
+            #{ledgerId}
+        </foreach>
+        AND occurred_at &gt;= #{start}
+        AND occurred_at &lt; #{end}
+        <if test="type != null">
+            AND type = #{type}
+        </if>
+        <if test="categoryId != null">
+            AND category_id = #{categoryId}
+        </if>
+        <if test="accountId != null">
+            AND account_id = #{accountId}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND note LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        ORDER BY occurred_at DESC, id DESC
+    </select>
+
+    <update id="update" parameterType="com.spenddiary.entity.Transaction">
+        UPDATE transactions
+        SET account_id = #{accountId},
+            category_id = #{categoryId},
+            type = #{type},
+            amount = #{amount},
+            occurred_at = #{occurredAt},
+            note = #{note}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM transactions
+        WHERE id = #{id}
+    </delete>
+
+    <select id="countByCategoryId" resultType="int">
+        SELECT COUNT(*)
+        FROM transactions
+        WHERE category_id = #{categoryId}
+    </select>
+
+    <select id="countByAccountId" resultType="int">
+        SELECT COUNT(*)
+        FROM transactions
+        WHERE account_id = #{accountId}
+    </select>
+
+</mapper>

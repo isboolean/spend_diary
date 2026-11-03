@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spenddiary.mapper.BudgetMapper">
+
+    <insert id="upsert" parameterType="com.spenddiary.entity.Budget">
+        INSERT INTO budgets (user_id, month, amount)
+        VALUES (#{userId}, #{month}, #{amount})
+        ON DUPLICATE KEY UPDATE amount = VALUES(amount)
+    </insert>
+
+    <select id="findByUserIdAndMonth" resultType="com.spenddiary.entity.Budget">
+        SELECT id, user_id, month, amount, created_at, updated_at
+        FROM budgets
+        WHERE user_id = #{userId} AND month = #{month}
+    </select>
+
+    <delete id="deleteByUserIdAndMonth">
+        DELETE FROM budgets
+        WHERE user_id = #{userId} AND month = #{month}
+    </delete>
+
+</mapper>

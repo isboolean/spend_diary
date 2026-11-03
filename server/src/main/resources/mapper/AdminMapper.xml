@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spenddiary.mapper.AdminMapper">
+
+    <select id="countUsers" resultType="long">
+        SELECT COUNT(*)
+        FROM users
+    </select>
+
+    <select id="countTransactionsTotal" resultType="long">
+        SELECT COUNT(*)
+        FROM transactions
+    </select>
+
+    <select id="countTransactionsBetween" resultType="long">
+        SELECT COUNT(*)
+        FROM transactions
+        WHERE occurred_at &gt;= #{start} AND occurred_at &lt; #{end}
+    </select>
+
+    <select id="sumIncomeExpenseBetween" resultType="map">
+        SELECT COALESCE(SUM(CASE WHEN type = 'INCOME' THEN amount ELSE 0 END), 0) AS income,
+               COALESCE(SUM(CASE WHEN type = 'EXPENSE' THEN amount ELSE 0 END), 0) AS expense
+        FROM transactions
+        WHERE occurred_at &gt;= #{start} AND occurred_at &lt; #{end}
+    </select>
+
+    <select id="findDailyTrend" resultType="com.spenddiary.vo.DailyStatVO">
+        SELECT DATE_FORMAT(occurred_at, '%Y-%m-%d')                                                                   AS date,
+               COALESCE(SUM(CASE WHEN type = 'INCOME' THEN amount ELSE 0 END), 0)                                      AS income,
+               COALESCE(SUM(CASE WHEN type = 'EXPENSE' THEN amount ELSE 0 END), 0)                                     AS expense
+        FROM transactions
+        WHERE occurred_at &gt;= #{start}
+        GROUP BY DATE_FORMAT(occurred_at, '%Y-%m-%d')
+        ORDER BY date
+    </select>
+
+    <select id="findUsers" resultType="com.spenddiary.vo.AdminUserVO">
+        SELECT u.id,
+               u.username,
+               u.nickname,
+               u.role,
+               u.enabled,
+               u.created_at,
+               COUNT(t.id) AS transaction_count
+        FROM users u
+                 LEFT JOIN ledgers l ON l.user_id = u.id
+                 LEFT JOIN transactions t ON t.ledger_id = l.id
+        GROUP BY u.id, u.username, u.nickname, u.role, u.enabled, u.created_at
+        ORDER BY u.id
+    </select>
+
+    <select id="findUserById" resultType="com.spenddiary.vo.AdminUserVO">
+        SELECT u.id,
+               u.username,
+               u.nickname,
+               u.role,
+               u.enabled,
+               u.created_at,
+               COUNT(t.id) AS transaction_count
+        FROM users u
+                 LEFT JOIN ledgers l ON l.user_id = u.id
+                 LEFT JOIN transactions t ON t.ledger_id = l.id
+        WHERE u.id = #{id}
+        GROUP BY u.id, u.username, u.nickname, u.role, u.enabled, u.created_at
+    </select>
+
+    <select id="findCategories" resultType="com.spenddiary.vo.AdminCategoryVO">
+        SELECT c.id,
+               c.name,
+               c.type,
+               c.icon,
+               c.builtin,
+               u.username                                                          AS owner_username,
+               (SELECT COUNT(*) FROM transactions t WHERE t.category_id = c.id)    AS usage_count
+        FROM categories c
+                 LEFT JOIN users u ON u.id = c.user_id
+        ORDER BY c.builtin DESC, c.type, c.sort_order, c.id
+    </select>
+
+    <select id="findCategoryById" resultType="com.spenddiary.vo.AdminCategoryVO">
+        SELECT c.id,
+               c.name,
+               c.type,
+               c.icon,
+               c.builtin,
+               u.username                                                          AS owner_username,
+               (SELECT COUNT(*) FROM transactions t WHERE t.category_id = c.id)    AS usage_count
+        FROM categories c
+                 LEFT JOIN users u ON u.id = c.user_id
+        WHERE c.id = #{id}
+    </select>
+
+    <select id="countByBuiltinNameExcluding" resultType="int">
+        SELECT COUNT(*)
+        FROM categories
+        WHERE builtin = 1 AND name = #{name}
+        <if test="excludeId != null">
+            AND id != #{excludeId}
+        </if>
+    </select>
+
+    <select id="countUsageByCategoryId" resultType="long">
+        SELECT COUNT(*)
+        FROM transactions
+        WHERE category_id = #{categoryId}
+    </select>
+
+</mapper>

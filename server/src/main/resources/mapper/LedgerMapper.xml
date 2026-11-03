@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spenddiary.mapper.LedgerMapper">
+
+    <insert id="insert" parameterType="com.spenddiary.entity.Ledger" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ledgers (user_id, name)
+        VALUES (#{userId}, #{name})
+    </insert>
+
+    <select id="findByUserId" resultType="com.spenddiary.entity.Ledger">
+        SELECT id, user_id, name, created_at, updated_at
+        FROM ledgers
+        WHERE user_id = #{userId}
+    </select>
+
+    <select id="findById" resultType="com.spenddiary.entity.Ledger">
+        SELECT id, user_id, name, created_at, updated_at
+        FROM ledgers
+        WHERE id = #{id}
+    </select>
+
+</mapper>
