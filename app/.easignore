@@ -1,0 +1,14 @@
+node_modules/
+android/
+ios/
+.expo/
+dist/
+web-build/
+.kotlin/
+.gradle/
+.cxx/
+build/
+*.jks
+*.keystore
+*.log
+.DS_Store
